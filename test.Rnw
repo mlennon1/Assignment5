@@ -1,0 +1,216 @@
+\documentclass{article}
+\title { Profiling a Data Set}
+\author { Mike Lennon }
+
+\begin{document}
+\maketitle
+\SweaveOpts{concordance=TRUE}
+
+
+I got the data from http://vincentarelbundock.github.io/Rdatasets/datasets.html
+The data is attributes for 53,940 diamonds including prices. This is an example of the first few rows of data:
+
+
+<<echo = FALSE>>=
+  library(ggplot2)
+library(plyr)
+   surveyData<- read.table("C:\\Users\\mike\\Desktop\\Data Aquisition\\week 5\\diamonds.csv", header = TRUE, sep=",", stringsAsFactors = F)
+head(surveyData)
+
+@
+<<echo = FALSE>>=
+cat("\n")
+@
+The attributes for each diamond observation are carat, cut, color, clarity, depth, table, price, x, y and z.
+
+There is no missing data for any observation.
+<<echo=FALSE,results=hide>>=
+numMissingValues<-function(input){
+  count<-0
+  for(value in input){
+    
+    if(is.na(value)){
+      count<- count + 1 
+    }
+  }
+  count
+}
+(numMissingValues(surveyData$carat))
+(numMissingValues(surveyData$cut))
+(numMissingValues(surveyData$color))
+(numMissingValues(surveyData$clarity))
+(numMissingValues(surveyData$depth))
+(numMissingValues(surveyData$table))
+(numMissingValues(surveyData$price))
+(numMissingValues(surveyData$x))
+(numMissingValues(surveyData$y))
+(numMissingValues(surveyData$z))
+@
+
+Carat is a continuous variable  and represents the weight of the diamond.It ranges from 
+.2 to 5.01 
+
+Cut is categorical data. Cut represents the quality of the diamond cut. The cut values can be \{Fair, Good, Ideal, Premium, Very Good\}
+<<echo = FALSE>>=
+cutValues <- unique(surveyData$cut)
+(cutValues)
+
+@
+
+Color is categorical data used to represent the color of the diamond. The values can be \{J, I, H, G, F,E, D\}
+<< echo = FALSE>>=
+colorValues <- unique(surveyData$color)
+(colorValues)
+@
+
+
+Clarity is categorical data. It represents how clear the diamond is. The clarity values can be \{I1, IF, SI1, SI2, VS1, VS2, VVS1, VVS2\}
+<<echo = FALSE>>=
+#Code used to get the data attributes:
+clarityValues <- unique(surveyData$clarity)
+(clarityValues)
+# The clarity values can be {I1, IF, SI1, SI2, VS1, VS2, VVS1, VVS2}
+# Clarity is categorical data
+@
+
+Table is a continuous variable that ranges in value from 43 to 95 in this data set. It represents the width of the diamond's top as compared to its widest point.
+
+Price is the price of the diamond in US dollars. Price is continuous and ranges from 326 to 18,823.
+
+
+
+x,y and z represent the length, width and depth of the diamond respectively. x,y and z are continuous variables.  x ranges from 0 to 10.74
+y ranges from 0 to 58.9 and z ranges from 0 to 31.8
+
+Depth is a continuous variable that ranges in value from 43 to 79. It represents the depth as compared to the length and width. This variable is a function of x,y and z so it may not be useful as a predictor of price.
+
+<<echo = FALSE, results = hide>>=
+
+#Code to show minimum and maximum values for continuous data
+caratMax <- max(surveyData$carat,na.rm=TRUE)
+(caratMax)# max value is 5.01
+caratMin <- min(surveyData$carat,na.rm=TRUE)
+(caratMin) # min value is .2
+# Carat is continuous data
+
+
+depthMax <- max(surveyData$depth,na.rm=TRUE)
+(depthMax)# max value is 79
+depthMin <- min(surveyData$depth,na.rm=TRUE)
+(depthMin) # min value is 43
+#Depth is continuous data
+
+# Table is used to describe a diamonds proportions
+# There were no notable outliers or missing values for this variable
+tableMax <- max(surveyData$table,na.rm=TRUE)
+(tableMax)# max value is 95
+tableMin <- min(surveyData$table,na.rm=TRUE)
+(tableMin) # min value is 43
+# Table is continuous data
+
+# There were no notable outliers or missing values for price variable
+#Price is continuous data
+priceMax <- max(surveyData$price,na.rm=TRUE)
+(priceMax)# max value is 18823
+priceMin <- min(surveyData$price,na.rm=TRUE)
+(priceMin) # min value is 326
+
+#X is continuous data
+xMax <- max(surveyData$x,na.rm=TRUE)
+(xMax)# max value is 10.74
+xMin <- min(surveyData$x,na.rm=TRUE)
+(xMin) # min value is 0
+
+
+# Y is continuous data
+yMax <- max(surveyData$y,na.rm=TRUE)
+(yMax)# max value is 58.9
+yMin <- min(surveyData$y,na.rm=TRUE)
+(yMin) # min value is 0
+
+#Z is continuous data
+zMax <- max(surveyData$z,na.rm=TRUE)
+(zMax)# max value is 31.8
+zMin <- min(surveyData$z,na.rm=TRUE)
+(zMin) # min value is 0
+
+@
+
+\section {X and Y are highly correlated.}
+
+
+<<echo=FALSE, fig=TRUE>>=
+require(ggplot2)
+print(ggplot(surveyData, aes(x=x, y= y)) + geom_point())
+
+@
+
+
+\section {Y and Z are correlated as well.}
+
+<<echo=FALSE, fig=TRUE>>=
+require(ggplot2)
+print(ggplot(surveyData, aes(x=y, y= z)) + geom_point())
+
+@
+
+
+\section {X and carat look exponentially related.}
+
+<<echo=FALSE, fig=TRUE>>=
+require(ggplot2)
+print(ggplot(surveyData, aes(x=x, y= carat)) + geom_point())
+
+@
+
+
+\section{X and table do not seem to be correlated}
+<<echo=FALSE, fig=TRUE>>=
+#require(ggplot2)
+print(ggplot(surveyData, aes(x=x, y= table)) + geom_point())
+
+@
+
+Other variables that do not seem to be correlated are x and depth, color and price, as well as color and clarity.
+<<echo = FALSE, results = hide>>=
+# Code for finding correlations among variables
+# x and y look highly correlated
+#ggplot(surveyData, aes(x=x, y= y)) + geom_point()
+
+
+# There are some outliers but y and z also look highly correlated
+#ggplot(surveyData, aes(x=y, y= z)) + geom_point()
+
+
+# x and depth are not correlated at all
+#ggplot(surveyData, aes(x=x, y= depth)) + geom_point()
+
+# x and carat may be exponentially related
+#ggplot(surveyData, aes(x=x, y= carat)) + geom_point()
+
+# x and table are not correlated at all
+#ggplot(surveyData, aes(x=x, y= table)) + geom_point()
+
+
+# carat and table are not correlated
+#ggplot(surveyData, aes(x=carat, y= table)) + geom_point()
+
+#Color and price seem to have no correlation at all
+#ggplot(surveyData, aes(x=color, y= price)) + geom_point()
+
+
+# color and clarity do not seem to be correlated
+#ggplot(surveyData, aes(x=color, y= clarity)) + geom_point()
+
+@
+
+\section {I did not see any variables that I would bin.The categorical data could be recoded for regression purposes in the future. Below is an example of code to recode color}
+
+<<>>=
+surveyData$colorcode <- revalue(surveyData$color, c("J"="1", "I"="2","H"="3","G"="4","F"  ="5","E"="6","D"="7"))
+head(surveyData)
+
+
+@
+
+\end{document}
